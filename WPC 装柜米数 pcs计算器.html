@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>40HQ PCS & 米数生成器</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial;
+      background: #f4f6fb;
+      padding: 16px;
+      color: #111;
+    }
+    h1 { font-size: 18px; margin-bottom: 12px; }
+    .box {
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,.06);
+    }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 8px 0;
+    }
+    label { font-size: 13px; }
+    input {
+      width: 120px;
+      padding: 6px 8px;
+      font-size: 13px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      font-size: 14px;
+      border: none;
+      border-radius: 8px;
+      background: #2f5eff;
+      color: #fff;
+      cursor: pointer;
+    }
+    .kpi {
+      font-size: 16px;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+    .small {
+      font-size: 11px;
+      color: #666;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>40HQ PCS & 总米数生成器</h1>
+
+<div class="box">
+  <div class="row"><label>单支长度 L (m)</label><input id="L" value="2.44"></div>
+  <div class="row"><label>包装宽 Pw (m)</label><input id="Pw" value="0.186"></div>
+  <div class="row"><label>包装高 Ph (m)</label><input id="Ph" value="0.18"></div>
+  <div class="row"><label>每包支数</label><input id="N" value="44"></div>
+</div>
+
+<div class="box">
+  <button onclick="calc()">计算</button>
+</div>
+
+<div class="box">
+  <div class="kpi">每柜总 PCS：<span id="pcs">0</span></div>
+  <div class="kpi">每柜总米数：<span id="meters">0</span> m</div>
+  <div class="small" id="method"></div>
+</div>
+
+<script>
+function num(id) {
+  const s = document.getElementById(id).value
+    .toString().trim().replace(",", ".");
+  const n = Number(s);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function calc() {
+  const Lc = 12.03, Wc = 2.35, Hc = 2.69;
+
+  const L  = num("L");
+  const Pw = num("Pw");
+  const Ph = num("Ph");
+  const N  = num("N");
+
+  if (L <= 0 || Pw <= 0 || Ph <= 0 || N <= 0) return;
+
+  const lenCount = Math.floor(Lc / L);
+
+  // 摆法 A：Pw → 高度，Ph → 宽度
+  const packsA = lenCount *
+    Math.floor(Wc / Ph) *
+    Math.floor(Hc / Pw);
+
+  // 摆法 B：Pw → 宽度，Ph → 高度
+  const packsB = lenCount *
+    Math.floor(Wc / Pw) *
+    Math.floor(Hc / Ph);
+
+  const bestPacks = Math.max(packsA, packsB);
+
+  const totalPCS = bestPacks * N;
+  const totalMeters = totalPCS * L;
+
+  document.getElementById("pcs").innerText = totalPCS.toLocaleString();
+  document.getElementById("meters").innerText = totalMeters.toFixed(0);
+  document.getElementById("method").innerText =
+    packsA >= packsB
+      ? "采用摆法 A：包装宽走高度，包装高走宽度"
+      : "采用摆法 B：包装宽走宽度，包装高走高度";
+}
+</script>
+
+</body>
+</html>
