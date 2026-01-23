@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>40HQ 装柜 + FOB（含港杂）+ 利润率 + 提成</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial;background:#f4f6fb;padding:16px;margin:0}
+h3{margin:0 0 12px}
+.box{background:#fff;border-radius:12px;padding:14px;margin-bottom:14px;box-shadow:0 4px 12px rgba(0,0,0,.06)}
+.row{display:flex;justify-content:space-between;align-items:center;margin:8px 0;gap:12px}
+label{font-size:13px;flex:1}
+input{width:180px;max-width:50vw;padding:7px 8px;border-radius:8px;border:1px solid #cfd6ea;font-size:13px}
+button{width:100%;padding:11px;border:none;border-radius:10px;background:#2f5eff;color:#fff;font-size:14px}
+.kpi{font-weight:650;margin-top:7px}
+.small{font-size:11px;color:#666;line-height:1.45;margin-top:6px}
+.mono{font-variant-numeric:tabular-nums}
+</style>
+</head>
+
+<body>
+<h3>40HQ 装柜 + FOB 单价（含港杂）+ 利润率 + 提成</h3>
+
+<div class="box">
+<b>装柜参数（体积主导）</b>
+<div class="row"><label>单支长度 L (m)</label><input id="L" value="2.90"></div>
+<div class="row"><label>包装宽 Pw (m)</label><input id="Pw" value="0.186"></div>
+<div class="row"><label>包装高 Ph (m)</label><input id="Ph" value="0.180"></div>
+<div class="row"><label>每包支数</label><input id="N" value="44"></div>
+</div>
+
+<div class="box">
+<b>报价输入</b>
+<div class="row"><label>含税出厂价 RMB / m</label><input id="ExTax" value="4.90"></div>
+<div class="row"><label>报价利润点 %（不含退税）</label><input id="MarginPct" value="5"></div>
+<div class="row"><label>港杂 RMB / 柜</label><input id="Port" value="5000"></div>
+<div class="row"><label>汇率 RMB / USD</label><input id="FX" value="6.90"></div>
+</div>
+
+<div class="box">
+<b>税 & 提成</b>
+<div class="row"><label>VAT</label><input id="VAT" value="0.13"></div>
+<div class="row"><label>退税率</label><input id="Rebate" value="0.13"></div>
+<div class="row"><label>提成比例</label><input id="CommRate" value="0.15"></div>
+</div>
+
+<div class="box">
+<button onclick="calc()">计算</button>
+</div>
+
+<div class="box">
+<b>结果（全部保留 2 位小数）</b>
+
+<div class="kpi mono">总 PCS：<span id="pcs">0.00</span></div>
+<div class="kpi mono">每柜总米数：<span id="m">0.00</span> m</div>
+
+<div class="kpi mono">FOB 单价（含港杂）：<span id="fobUsd">0.00</span> USD / m</div>
+<div class="kpi mono">FOB 单价（RMB）：<span id="fobRmb">0.00</span> RMB / m</div>
+
+<div class="kpi mono">FOB 总额：<span id="fobTotal">0.00</span> RMB</div>
+<div class="kpi mono">成本：<span id="cost">0.00</span> RMB</div>
+
+<div class="kpi mono">报价利润（不含退税）：<span id="profit">0.00</span> RMB</div>
+<div class="kpi mono">报价利润率：<span id="quoteMargin">0.00</span> %</div>
+
+<div class="kpi mono">退税：<span id="rebate">0.00</span> RMB</div>
+<div class="kpi mono">真实利润：<span id="realProfit">0.00</span> RMB</div>
+<div class="kpi mono">真实利润率：<span id="realMargin">0.00</span> %</div>
+
+<div class="kpi mono">你的提成：<span id="comm">0.00</span> RMB</div>
+</div>
+
+<script>
+function n(id){
+  return Number(document.getElementById(id).value.replace(",", ".")) || 0;
+}
+function f2(x){
+  return Number(x).toFixed(2);
+}
+
+function calc(){
+  const Lc=12.03, Wc=2.35, Hc=2.69;
+  const L=n("L"), Pw=n("Pw"), Ph=n("Ph"), N=n("N");
+
+  const len=Math.floor(Lc/L);
+  const packs=Math.max(
+    len*Math.floor(Wc/Pw)*Math.floor(Hc/Ph),
+    len*Math.floor(Wc/Ph)*Math.floor(Hc/Pw)
+  );
+
+  const totalPCS=packs*N;
+  const totalM=totalPCS*L;
+
+  const exTax=n("ExTax");
+  const margin=n("MarginPct")/100;
+  const port=n("Port");
+  const fx=n("FX");
+
+  const fobRmbPerM = exTax*(1+margin) + port/totalM;
+  const fobUsdPerM = fobRmbPerM/fx;
+  const fobTotalRmb = fobRmbPerM*totalM;
+
+  const cost = exTax*totalM + port;
+  const profit = fobTotalRmb - cost;
+
+  const vat=n("VAT"), rebateRate=n("Rebate");
+  const rebate = exTax/(1+vat)*rebateRate*totalM;
+
+  const realProfit = profit + rebate;
+  const quoteMargin = profit/fobTotalRmb*100;
+  const realMargin = realProfit/fobTotalRmb*100;
+
+  const comm = realProfit*n("CommRate");
+
+  document.getElementById("pcs").innerText = f2(totalPCS);
+  document.getElementById("m").innerText = f2(totalM);
+
+  document.getElementById("fobUsd").innerText = f2(fobUsdPerM);
+  document.getElementById("fobRmb").innerText = f2(fobRmbPerM);
+
+  document.getElementById("fobTotal").innerText = f2(fobTotalRmb);
+  document.getElementById("cost").innerText = f2(cost);
+  document.getElementById("profit").innerText = f2(profit);
+
+  document.getElementById("quoteMargin").innerText = f2(quoteMargin);
+  document.getElementById("rebate").innerText = f2(rebate);
+  document.getElementById("realProfit").innerText = f2(realProfit);
+  document.getElementById("realMargin").innerText = f2(realMargin);
+  document.getElementById("comm").innerText = f2(comm);
+}
+calc();
+</script>
+</body>
+</html>
