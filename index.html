@@ -1,134 +1,450 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>40HQ 装柜 + FOB（含港杂）+ 利润率 + 提成</title>
-<style>
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial;background:#f4f6fb;padding:16px;margin:0}
-h3{margin:0 0 12px}
-.box{background:#fff;border-radius:12px;padding:14px;margin-bottom:14px;box-shadow:0 4px 12px rgba(0,0,0,.06)}
-.row{display:flex;justify-content:space-between;align-items:center;margin:8px 0;gap:12px}
-label{font-size:13px;flex:1}
-input{width:180px;max-width:50vw;padding:7px 8px;border-radius:8px;border:1px solid #cfd6ea;font-size:13px}
-button{width:100%;padding:11px;border:none;border-radius:10px;background:#2f5eff;color:#fff;font-size:14px}
-.kpi{font-weight:650;margin-top:7px}
-.small{font-size:11px;color:#666;line-height:1.45;margin-top:6px}
-.mono{font-variant-numeric:tabular-nums}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>统一报价器：ASA / WPC格栅 / UV板 / PE / 木饰面</title>
+  <style>
+    body{font-family:Arial;background:#f5f6fa;padding:16px;margin:0}
+    h3{margin:0 0 12px}
+    .box{background:#fff;padding:14px;border-radius:10px;margin-bottom:14px}
+    .row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:8px 0}
+    label{flex:1;font-size:13px}
+    input,select{padding:7px;width:240px;max-width:62vw;border:1px solid #d7dbea;border-radius:8px}
+    button{width:100%;padding:10px;background:#2f5eff;color:#fff;border:none;border-radius:8px;cursor:pointer}
+    .kpi{margin:6px 0;font-weight:bold}
+    .mono{font-variant-numeric:tabular-nums}
+    .small{font-size:11px;color:#666;line-height:1.5}
+    .hidden{display:none}
+    hr{border:none;border-top:1px solid #eef1fb;margin:10px 0}
+  </style>
 </head>
-
 <body>
-<h3>40HQ 装柜 + FOB 单价（含港杂）+ 利润率 + 提成</h3>
+  <h3>统一报价器</h3>
 
-<div class="box">
-<b>装柜参数（体积主导）</b>
-<div class="row"><label>单支长度 L (m)</label><input id="L" value="2.90"></div>
-<div class="row"><label>包装宽 Pw (m)</label><input id="Pw" value="0.186"></div>
-<div class="row"><label>包装高 Ph (m)</label><input id="Ph" value="0.180"></div>
-<div class="row"><label>每包支数</label><input id="N" value="44"></div>
-</div>
+  <div class="box">
+    <div class="row">
+      <label>产品</label>
+      <select id="product">
+        <option value="WPC">WPC格栅</option>
+        <option value="ASA">ASA</option>
+        <option value="UV">UV板</option>
+        <option value="PE">PE</option>
+        <option value="WOOD">木饰面</option>
+      </select>
+    </div>
 
-<div class="box">
-<b>报价输入</b>
-<div class="row"><label>含税出厂价 RMB / m</label><input id="ExTax" value="4.90"></div>
-<div class="row"><label>报价利润点 %（不含退税）</label><input id="MarginPct" value="5"></div>
-<div class="row"><label>港杂 RMB / 柜</label><input id="Port" value="5000"></div>
-<div class="row"><label>汇率 RMB / USD</label><input id="FX" value="6.90"></div>
-</div>
+    <div class="row" id="containerRow">
+      <label>柜型</label>
+      <select id="container">
+        <option value="20GP">20GP</option>
+        <option value="40GP">40GP</option>
+        <option value="40HQ" selected>40HQ</option>
+      </select>
+    </div>
 
-<div class="box">
-<b>税 & 提成</b>
-<div class="row"><label>VAT</label><input id="VAT" value="0.13"></div>
-<div class="row"><label>退税率</label><input id="Rebate" value="0.13"></div>
-<div class="row"><label>提成比例</label><input id="CommRate" value="0.15"></div>
-</div>
+    <div class="row">
+      <label id="exTaxLabel">含税出厂价</label>
+      <input id="exTax" value="0" />
+    </div>
 
-<div class="box">
-<button onclick="calc()">计算</button>
-</div>
+    <div class="row">
+      <label>报价利润点 %</label>
+      <input id="margin" value="5" />
+    </div>
 
-<div class="box">
-<b>结果（全部保留 2 位小数）</b>
+    <div class="row">
+      <label>汇率（RMB / USD）</label>
+      <input id="fx" value="6.90" />
+    </div>
 
-<div class="kpi mono">总 PCS：<span id="pcs">0.00</span></div>
-<div class="kpi mono">每柜总米数：<span id="m">0.00</span> m</div>
+    <div class="small mono" id="fixedNote"></div>
+  </div>
 
-<div class="kpi mono">FOB 单价（含港杂）：<span id="fobUsd">0.00</span> USD / m</div>
-<div class="kpi mono">FOB 单价（RMB）：<span id="fobRmb">0.00</span> RMB / m</div>
+  <!-- WPC/ASA：体积输入 -->
+  <div class="box hidden" id="volumeBox">
+    <b>装柜输入（体积）</b>
+    <div class="row">
+      <label>单支长度 L（m）</label>
+      <input id="vol_L" value="2.90" />
+    </div>
+    <div class="row">
+      <label>包装宽 Pw（m）</label>
+      <input id="vol_Pw" value="0.186" />
+    </div>
+    <div class="row">
+      <label>包装高 Ph（m）</label>
+      <input id="vol_Ph" value="0.180" />
+    </div>
+    <div class="row">
+      <label>每包支数（pcs/包）</label>
+      <input id="vol_N" value="44" />
+    </div>
+    <div class="small">宽高可互换，全部向下取整（只舍不入）。</div>
+  </div>
 
-<div class="kpi mono">FOB 总额：<span id="fobTotal">0.00</span> RMB</div>
-<div class="kpi mono">成本：<span id="cost">0.00</span> RMB</div>
+  <!-- UV：经验表 -->
+  <div class="box hidden" id="uvBox">
+    <b>UV 输入（仅 20GP）</b>
+    <div class="row">
+      <label>长度（m）</label>
+      <select id="uv_len">
+        <option value="2.44">2.44</option>
+        <option value="2.8">2.8</option>
+        <option value="2.9">2.9</option>
+      </select>
+    </div>
+    <div class="row">
+      <label>厚度（mm）</label>
+      <select id="uv_thk">
+        <option value="2">2.0</option>
+        <option value="2.5">2.5</option>
+        <option value="2.8">2.8</option>
+        <option value="3">3.0</option>
+      </select>
+    </div>
+    <div class="row">
+      <label>膜纸</label>
+      <select id="uv_film">
+        <option value="normal">普通</option>
+        <option value="gilded">鎏金（每米+3.5）</option>
+      </select>
+    </div>
+    <div class="small">UV 固定：港杂 5000 RMB/柜；托盘 12 托 × 120 RMB。</div>
+  </div>
 
-<div class="kpi mono">报价利润（不含退税）：<span id="profit">0.00</span> RMB</div>
-<div class="kpi mono">报价利润率：<span id="quoteMargin">0.00</span> %</div>
+  <!-- PE：重量/米 -->
+  <div class="box hidden" id="peBox">
+    <b>PE 输入（重量主导）</b>
+    <div class="row">
+      <label>每延米重量（kg/m）</label>
+      <input id="pe_kgpm" value="0" />
+    </div>
+    <div class="small">限重口径统一 28 吨（28000 kg），总米数 = FLOOR(28000 ÷ kg/m)。</div>
+  </div>
 
-<div class="kpi mono">退税：<span id="rebate">0.00</span> RMB</div>
-<div class="kpi mono">真实利润：<span id="realProfit">0.00</span> RMB</div>
-<div class="kpi mono">真实利润率：<span id="realMargin">0.00</span> %</div>
+  <!-- 木饰面：重量/㎡ -->
+  <div class="box hidden" id="woodBox">
+    <b>木饰面输入（重量主导）</b>
+    <div class="row">
+      <label>长度 L（m）</label>
+      <select id="wood_L">
+        <option value="2.44">2.44</option>
+        <option value="2.6">2.6</option>
+        <option value="2.8">2.8</option>
+        <option value="2.9">2.9</option>
+      </select>
+    </div>
+    <div class="row">
+      <label>厚度（mm）</label>
+      <select id="wood_thk">
+        <option value="5">5.0</option>
+        <option value="7.5">7.5</option>
+        <option value="8">8.0</option>
+      </select>
+    </div>
+    <div class="row">
+      <label>密度（kg/m³）</label>
+      <select id="wood_den">
+        <option value="650">650</option>
+        <option value="700">700</option>
+      </select>
+    </div>
+    <div class="small">木饰面托盘：15 托 × 220 RMB；单托 100 kg；限重 28000 kg。</div>
+  </div>
 
-<div class="kpi mono">你的提成：<span id="comm">0.00</span> RMB</div>
-</div>
+  <div class="box">
+    <button id="btn">计算</button>
+    <div class="small">结果全部保留 2 位小数。装柜相关一律向下取整。</div>
+  </div>
+
+  <div class="box">
+    <b>结果（全部保留 2 位小数）</b>
+    <div class="kpi mono">总 PCS：<span id="pcsOut">0.00</span> ｜ 每柜总米数：<span id="metersOut">0.00</span></div>
+    <div class="kpi mono">FOB 单价（USD）：<span id="fobUsdUnitOut">0.00</span> ｜ FOB 单价（RMB）：<span id="fobRmbUnitOut">0.00</span></div>
+    <div class="kpi mono">FOB 总额（RMB）：<span id="fobRmbTotalOut">0.00</span> ｜ FOB 总额（USD）：<span id="fobUsdTotalOut">0.00</span></div>
+    <div class="kpi mono">成本：<span id="costOut">0.00</span> ｜ 退税：<span id="rebateOut">0.00</span></div>
+    <div class="kpi mono">报价利润（不含退税）：<span id="profitOut">0.00</span> ｜ 报价利润率：<span id="profitRateOut">0.00</span>%</div>
+    <div class="kpi mono">真实利润：<span id="realProfitOut">0.00</span> ｜ 真实利润率：<span id="realRateOut">0.00</span>%</div>
+    <div class="kpi mono">提成：<span id="commOut">0.00</span></div>
+    <hr/>
+    <div class="small mono" id="note"></div>
+  </div>
 
 <script>
-function n(id){
-  return Number(document.getElementById(id).value.replace(",", ".")) || 0;
+/* ========= 固定常量（不需要填写） ========= */
+const FIXED = {
+  port: 5000,          // RMB/柜
+  payloadKg: 28000,    // 统一 28 吨口径
+  vat: 0.13,           // 仅用于解释，退税按你指定的 /1.13*0.13
+  commRate: 0.15
+};
+
+// 柜内尺寸（m），用于体积模型
+const CONTAINERS = {
+  "20GP": { L: 5.90,  W: 2.35, H: 2.39, payloadKg: FIXED.payloadKg },
+  "40GP": { L: 12.03, W: 2.35, H: 2.39, payloadKg: FIXED.payloadKg },
+  "40HQ": { L: 12.03, W: 2.35, H: 2.70, payloadKg: FIXED.payloadKg }
+};
+
+// UV：20GP经验整柜张数表
+const UV_TABLE_20GP = {
+  "2.44": { "2":2300, "2.5":1800, "2.8":1600, "3":1500 },
+  "2.8":  { "2":2000, "2.5":1600, "2.8":1400, "3":1300 },
+  "2.9":  { "2":1900, "2.5":1500, "2.8":1300, "3":1200 }
+};
+
+// 托盘规则（固定）
+const UV_PALLET = { cnt: 12, price: 120, kg: 100 };
+const WOOD_PALLET = { cnt: 15, price: 220, kg: 100 };
+
+/* ========= 工具 ========= */
+const $ = (id) => document.getElementById(id);
+function nval(id){
+  const s = String($(id).value ?? "").trim().replace(",", ".");
+  const v = Number(s);
+  return Number.isFinite(v) ? v : 0;
 }
 function f2(x){
-  return Number(x).toFixed(2);
+  const v = Number(x);
+  return Number.isFinite(v) ? v.toFixed(2) : "0.00";
+}
+function flo(x){
+  if(!Number.isFinite(x) || x <= 0) return 0;
+  return Math.floor(x);
 }
 
+/* ========= UI 切换 ========= */
+function updateUI(){
+  const p = $("product").value;
+
+  $("volumeBox").classList.toggle("hidden", !(p==="WPC" || p==="ASA"));
+  $("uvBox").classList.toggle("hidden", p!=="UV");
+  $("peBox").classList.toggle("hidden", p!=="PE");
+  $("woodBox").classList.toggle("hidden", p!=="WOOD");
+
+  // UV 仅 20GP：隐藏柜型并强制 20GP
+  if(p==="UV"){
+    $("containerRow").classList.add("hidden");
+  }else{
+    $("containerRow").classList.remove("hidden");
+  }
+
+  // 含税出厂价标签（提示单位）
+  if(p==="UV") $("exTaxLabel").innerText = "含税出厂价（RMB/张）";
+  else if(p==="WOOD") $("exTaxLabel").innerText = "含税出厂价（RMB/㎡）";
+  else $("exTaxLabel").innerText = "含税出厂价（RMB/m）";
+
+  const cont = (p==="UV") ? "20GP" : $("container").value;
+  $("fixedNote").innerText =
+    `固定口径：港杂 ${f2(FIXED.port)} RMB/柜；限重 ${f2(FIXED.payloadKg)} kg；提成 ${(FIXED.commRate*100).toFixed(0)}%。` +
+    ` UV托盘=12×120；木饰面托盘=15×220（单托100kg）。`;
+
+  calc();
+}
+
+/* ========= 核心计算（含数量段 + 报价段） ========= */
 function calc(){
-  const Lc=12.03, Wc=2.35, Hc=2.69;
-  const L=n("L"), Pw=n("Pw"), Ph=n("Ph"), N=n("N");
+  const p = $("product").value;
+  const cont = (p==="UV") ? "20GP" : $("container").value;
+  const container = CONTAINERS[cont];
 
-  const len=Math.floor(Lc/L);
-  const packs=Math.max(
-    len*Math.floor(Wc/Pw)*Math.floor(Hc/Ph),
-    len*Math.floor(Wc/Ph)*Math.floor(Hc/Pw)
-  );
+  const exTax = nval("exTax");          // 含税出厂价（按产品单位）
+  const margin = nval("margin")/100;   // 报价利润点（不含退税）
+  const fx = nval("fx");
 
-  const totalPCS=packs*N;
-  const totalM=totalPCS*L;
+  // 你要求的第一行：总PCS、每柜总米数
+  let totalPCS = 0;
+  let totalMeters = 0;
 
-  const exTax=n("ExTax");
-  const margin=n("MarginPct")/100;
-  const port=n("Port");
-  const fx=n("FX");
+  // 计价数量（用于 FOB 单价、成本、退税）：WPC/ASA/PE 按 m；WOOD 按 ㎡；UV 按 张
+  let chargeQty = 0;
 
-  const fobRmbPerM = exTax*(1+margin) + port/totalM;
-  const fobUsdPerM = fobRmbPerM/fx;
-  const fobTotalRmb = fobRmbPerM*totalM;
+  // FOB 单价（RMB/计价单位），FOB 总额 RMB
+  let fobRmbUnit = 0;
+  let fobRmbTotal = 0;
 
-  const cost = exTax*totalM + port;
-  const profit = fobTotalRmb - cost;
+  // 成本：出厂成本（含税）+ 港杂 + 托盘费（如有）
+  let costRmb = 0;
 
-  const vat=n("VAT"), rebateRate=n("Rebate");
-  const rebate = exTax/(1+vat)*rebateRate*totalM;
+  // 退税：按你口径 = 成本价/1.13*0.13，其中成本价=出厂成本（含税，不含港杂不含托盘）
+  let rebateRmb = 0;
 
-  const realProfit = profit + rebate;
-  const quoteMargin = profit/fobTotalRmb*100;
-  const realMargin = realProfit/fobTotalRmb*100;
+  // 托盘费（RMB/柜）
+  let palletCostTotal = 0;
 
-  const comm = realProfit*n("CommRate");
+  // 出厂成本（含税，不含港杂不含托盘），用于退税
+  let exFactoryCostTaxed = 0;
 
-  document.getElementById("pcs").innerText = f2(totalPCS);
-  document.getElementById("m").innerText = f2(totalM);
+  // ====== 产品数量段 ======
+  if(p==="WPC" || p==="ASA"){
+    // 体积模型：先算 packs，再算 totalPCS 与 totalMeters
+    const L = nval("vol_L");
+    const Pw = nval("vol_Pw");
+    const Ph = nval("vol_Ph");
+    const N = nval("vol_N");
 
-  document.getElementById("fobUsd").innerText = f2(fobUsdPerM);
-  document.getElementById("fobRmb").innerText = f2(fobRmbPerM);
+    const lenCount = flo(container.L / (L>0 ? L : 1e9));
 
-  document.getElementById("fobTotal").innerText = f2(fobTotalRmb);
-  document.getElementById("cost").innerText = f2(cost);
-  document.getElementById("profit").innerText = f2(profit);
+    const packsA = lenCount * flo(container.W / (Pw>0 ? Pw : 1e9)) * flo(container.H / (Ph>0 ? Ph : 1e9));
+    const packsB = lenCount * flo(container.W / (Ph>0 ? Ph : 1e9)) * flo(container.H / (Pw>0 ? Pw : 1e9));
+    const packs = Math.max(packsA, packsB);
 
-  document.getElementById("quoteMargin").innerText = f2(quoteMargin);
-  document.getElementById("rebate").innerText = f2(rebate);
-  document.getElementById("realProfit").innerText = f2(realProfit);
-  document.getElementById("realMargin").innerText = f2(realMargin);
-  document.getElementById("comm").innerText = f2(comm);
+    totalPCS = packs * (N>0 ? N : 0);
+    totalMeters = totalPCS * (L>0 ? L : 0);
+
+    chargeQty = totalMeters;                 // 计价按 m
+    exFactoryCostTaxed = exTax * chargeQty;  // 出厂含税成本（用于退税）
+
+    const portPerUnit = (chargeQty>0) ? (FIXED.port/chargeQty) : 0;
+    fobRmbUnit = exTax*(1+margin) + portPerUnit; // RMB/m
+    fobRmbTotal = fobRmbUnit * chargeQty;
+
+    costRmb = exFactoryCostTaxed + FIXED.port;
+
+    rebateRmb = exFactoryCostTaxed / 1.13 * 0.13;
+
+    $("note").innerText = `WPC/ASA：体积模型，宽高可互换。packs=${packs}，总PCS=${f2(totalPCS)}，总米数=${f2(totalMeters)}m。`;
+  }
+
+  if(p==="PE"){
+    // 重量模型：m = FLOOR(28000 ÷ kg/m)
+    const kgpm = nval("pe_kgpm");
+    totalMeters = flo(container.payloadKg / (kgpm>0 ? kgpm : 1e9));
+
+    totalPCS = 0;                    // 未提供“pcs/米”的换算，统一显示0
+    chargeQty = totalMeters;         // 计价按 m
+    exFactoryCostTaxed = exTax * chargeQty;
+
+    const portPerUnit = (chargeQty>0) ? (FIXED.port/chargeQty) : 0;
+    fobRmbUnit = exTax*(1+margin) + portPerUnit; // RMB/m
+    fobRmbTotal = fobRmbUnit * chargeQty;
+
+    costRmb = exFactoryCostTaxed + FIXED.port;
+    rebateRmb = exFactoryCostTaxed / 1.13 * 0.13;
+
+    $("note").innerText = `PE：重量模型。kg/m=${f2(kgpm)}，总米数=${f2(totalMeters)}m（向下取整）。`;
+  }
+
+  if(p==="UV"){
+    // UV 经验整柜：张数表 + 膜纸加价 + 托盘费
+    const uvLen = $("uv_len").value;
+    const uvThk = $("uv_thk").value;
+    const film = $("uv_film").value;
+
+    const sheets = (UV_TABLE_20GP[uvLen] && UV_TABLE_20GP[uvLen][uvThk]) ? UV_TABLE_20GP[uvLen][uvThk] : 0;
+
+    const L = Number(uvLen);
+    const filmAddPerSheet = (film==="gilded") ? (L * 3.5) : 0;
+
+    const exTaxAdj = exTax + filmAddPerSheet;
+
+    palletCostTotal = UV_PALLET.cnt * UV_PALLET.price; // 1440
+
+    totalPCS = sheets;     // 总PCS=张数
+    totalMeters = 0;
+
+    chargeQty = sheets;                // 计价按 张
+    exFactoryCostTaxed = exTaxAdj * chargeQty;
+
+    const portPerUnit = (chargeQty>0) ? (FIXED.port/chargeQty) : 0;
+    const palletPerUnit = (chargeQty>0) ? (palletCostTotal/chargeQty) : 0;
+
+    fobRmbUnit = exTaxAdj*(1+margin) + portPerUnit + palletPerUnit; // RMB/张
+    fobRmbTotal = fobRmbUnit * chargeQty;
+
+    costRmb = exFactoryCostTaxed + FIXED.port + palletCostTotal;
+
+    rebateRmb = exFactoryCostTaxed / 1.13 * 0.13;
+
+    $("note").innerText =
+      `UV：仅20GP经验值。张数=${sheets}。托盘费=${f2(palletCostTotal)} RMB/柜。` +
+      (film==="gilded" ? ` 鎏金每张加${f2(filmAddPerSheet)} RMB。` : ` 普通不加价。`);
+  }
+
+  if(p==="WOOD"){
+    // 木饰面：重量→张数→总㎡，托盘 15×220，单托100kg，限重28000kg
+    const L = Number($("wood_L").value);
+    const thk = Number($("wood_thk").value);    // mm
+    const den = Number($("wood_den").value);    // kg/m³
+
+    const sqmPerSheet = 1.22 * L;
+    const kgPerSheet = 1.22 * L * (thk/1000) * den;
+
+    palletCostTotal = WOOD_PALLET.cnt * WOOD_PALLET.price; // 3300
+    const palletWeightTotal = WOOD_PALLET.cnt * WOOD_PALLET.kg; // 1500
+    const boardPayloadKg = Math.max(0, container.payloadKg - palletWeightTotal);
+
+    const sheets = flo(boardPayloadKg / (kgPerSheet>0 ? kgPerSheet : 1e9));
+    const totalSqm = sheets * sqmPerSheet;
+
+    totalPCS = sheets;      // 这里 PCS=张数（最直观）
+    totalMeters = 0;        // 木饰面不按米
+
+    chargeQty = totalSqm;   // 计价按 ㎡
+    exFactoryCostTaxed = exTax * chargeQty; // 出厂含税成本（用于退税）
+
+    const portPerUnit = (chargeQty>0) ? (FIXED.port/chargeQty) : 0;
+    const palletPerUnit = (chargeQty>0) ? (palletCostTotal/chargeQty) : 0;
+
+    fobRmbUnit = exTax*(1+margin) + portPerUnit + palletPerUnit; // RMB/㎡
+    fobRmbTotal = fobRmbUnit * chargeQty;
+
+    costRmb = exFactoryCostTaxed + FIXED.port + palletCostTotal;
+    rebateRmb = exFactoryCostTaxed / 1.13 * 0.13;
+
+    $("note").innerText =
+      `木饰面：单张面积=${f2(sqmPerSheet)}㎡，单张重量=${f2(kgPerSheet)}kg，张数=${f2(sheets)}，总㎡=${f2(totalSqm)}。托盘费=${f2(palletCostTotal)} RMB/柜。`;
+  }
+
+  // ====== 利润段（统一） ======
+  const fobUsdUnit = (fx>0) ? (fobRmbUnit / fx) : 0;
+  const fobUsdTotal = (fx>0) ? (fobRmbTotal / fx) : 0;
+
+  const profit = fobRmbTotal - costRmb; // 不含退税
+  const profitRate = (fobRmbTotal!==0) ? (profit / fobRmbTotal * 100) : 0;
+
+  const realProfit = profit + rebateRmb;
+  const realRate = (fobRmbTotal!==0) ? (realProfit / fobRmbTotal * 100) : 0;
+
+  const commission = realProfit * FIXED.commRate;
+
+  // ====== 输出（全部2位） ======
+  $("pcsOut").innerText = f2(totalPCS);
+  $("metersOut").innerText = f2(totalMeters);
+
+  $("fobUsdUnitOut").innerText = f2(fobUsdUnit);
+  $("fobRmbUnitOut").innerText = f2(fobRmbUnit);
+
+  $("fobRmbTotalOut").innerText = f2(fobRmbTotal);
+  $("fobUsdTotalOut").innerText = f2(fobUsdTotal);
+
+  $("costOut").innerText = f2(costRmb);
+  $("rebateOut").innerText = f2(rebateRmb);
+
+  $("profitOut").innerText = f2(profit);
+  $("profitRateOut").innerText = f2(profitRate);
+
+  $("realProfitOut").innerText = f2(realProfit);
+  $("realRateOut").innerText = f2(realRate);
+
+  $("commOut").innerText = f2(commission);
 }
-calc();
+
+/* ========= 事件绑定 ========= */
+$("product").addEventListener("change", updateUI);
+$("container").addEventListener("change", updateUI);
+["exTax","margin","fx","vol_L","vol_Pw","vol_Ph","vol_N","uv_len","uv_thk","uv_film","pe_kgpm","wood_L","wood_thk","wood_den"]
+  .forEach(id=>{
+    const el = $(id);
+    if(!el) return;
+    el.addEventListener("input", calc);
+    el.addEventListener("change", calc);
+  });
+$("btn").addEventListener("click", calc);
+
+// 初始化
+updateUI();
 </script>
 </body>
 </html>
