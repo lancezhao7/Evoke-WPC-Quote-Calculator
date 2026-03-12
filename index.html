@@ -1,449 +1,469 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>统一报价器：ASA / WPC格栅 / UV板 / PE / 木饰面</title>
-  <style>
-    body{font-family:Arial;background:#f5f6fa;padding:16px;margin:0}
-    h3{margin:0 0 12px}
-    .box{background:#fff;padding:14px;border-radius:10px;margin-bottom:14px}
-    .row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:8px 0}
-    label{flex:1;font-size:13px}
-    input,select{padding:7px;width:240px;max-width:62vw;border:1px solid #d7dbea;border-radius:8px}
-    button{width:100%;padding:10px;background:#2f5eff;color:#fff;border:none;border-radius:8px;cursor:pointer}
-    .kpi{margin:6px 0;font-weight:bold}
-    .mono{font-variant-numeric:tabular-nums}
-    .small{font-size:11px;color:#666;line-height:1.5}
-    .hidden{display:none}
-    hr{border:none;border-top:1px solid #eef1fb;margin:10px 0}
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Evoke WPC · 报价计算器</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap');
+  :root{--bg:#0e0f11;--surface:#16181c;--surface2:#1e2026;--border:#2a2d35;--accent:#c8f135;--accent2:#4af0c4;--text:#e8eaf0;--muted:#6b7080;--danger:#ff5f5f;--radius:12px;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Mono',monospace;background:var(--bg);color:var(--text);min-height:100vh;padding:24px 16px 48px;}
+  .header{display:flex;align-items:baseline;gap:12px;margin-bottom:28px;padding-bottom:16px;border-bottom:1px solid var(--border);max-width:860px;margin-left:auto;margin-right:auto;}
+  .header-brand{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:var(--accent);letter-spacing:-0.5px;}
+  .header-sub{font-size:11px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:860px;margin:0 auto;}
+  @media(max-width:640px){.grid{grid-template-columns:1fr;}}
+  .col-full{grid-column:1/-1;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;}
+  .card+.card,.card~.card{margin-top:14px;}
+  .card-title{font-family:'Syne',sans-serif;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px;letter-spacing:0.5px;}
+  .field select,.field input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;padding:9px 12px;outline:none;transition:border-color 0.15s;appearance:none;-webkit-appearance:none;}
+  .field select:focus,.field input:focus{border-color:var(--accent);}
+  .field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7080' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
+  .pill-group{display:flex;gap:6px;flex-wrap:wrap;}
+  .pill{padding:6px 14px;border-radius:99px;border:1px solid var(--border);font-size:12px;cursor:pointer;background:var(--surface2);color:var(--muted);transition:all 0.15s;font-family:'DM Mono',monospace;}
+  .pill.active{background:var(--accent);color:#0e0f11;border-color:var(--accent);font-weight:600;}
+  .container-group{display:flex;gap:6px;}
+  .ctag{flex:1;text-align:center;padding:8px;border-radius:8px;border:1px solid var(--border);font-size:12px;cursor:pointer;background:var(--surface2);color:var(--muted);transition:all 0.15s;}
+  .ctag.active{border-color:var(--accent2);color:var(--accent2);background:#0d201a;}
+  .divider{height:1px;background:var(--border);margin:14px 0;}
+  /* UV */
+  .uv-len-group{display:flex;gap:6px;margin-bottom:10px;}
+  .uv-len-btn{flex:1;text-align:center;padding:9px;border-radius:8px;border:1px solid var(--border);font-size:13px;cursor:pointer;background:var(--surface2);color:var(--muted);transition:all 0.15s;}
+  .uv-len-btn.active{border-color:var(--accent2);color:var(--accent2);background:#0d201a;}
+  .uv-matrix{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:4px;}
+  .uv-cell{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 6px;text-align:center;cursor:pointer;transition:all 0.15s;}
+  .uv-cell:hover{border-color:var(--muted);}
+  .uv-cell.active{border-color:var(--accent);background:#141a05;}
+  .uv-cell .uv-thick{font-size:14px;color:var(--text);font-weight:500;}
+  .uv-cell .uv-price{font-size:10px;color:var(--muted);margin-top:3px;}
+  .uv-cell.active .uv-price{color:var(--accent);}
+  .film-group{display:flex;gap:6px;}
+  .film-btn{flex:1;text-align:center;padding:9px;border-radius:8px;border:1px solid var(--border);font-size:12px;cursor:pointer;background:var(--surface2);color:var(--muted);transition:all 0.15s;}
+  .film-btn.active{border-color:#f0c040;color:#f0c040;background:#1a1800;}
+  /* specs */
+  .specs-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px;}
+  .spec-item{background:var(--surface2);border-radius:8px;padding:8px 10px;}
+  .spec-label{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;}
+  .spec-val{font-size:13px;color:var(--text);}
+  /* kpi */
+  .kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .kpi-item{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;}
+  .kpi-item.hl{border-color:var(--accent);background:#141a05;}
+  .kpi-item.hl2{border-color:var(--accent2);background:#081510;}
+  .kpi-label{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;}
+  .kpi-value{font-size:20px;font-weight:500;color:var(--text);letter-spacing:-0.5px;}
+  .kpi-item.hl .kpi-value{color:var(--accent);}
+  .kpi-item.hl2 .kpi-value{color:var(--accent2);}
+  .kpi-unit{font-size:11px;color:var(--muted);margin-left:3px;}
+  .profit-bar-wrap{margin-top:10px;}
+  .profit-bar-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:5px;}
+  .profit-bar-track{height:6px;background:var(--surface2);border-radius:99px;overflow:hidden;}
+  .profit-bar-fill{height:100%;border-radius:99px;transition:width 0.4s cubic-bezier(0.4,0,0.2,1);width:0%;}
+  .profit-bar-fill.good{background:var(--accent);}
+  .profit-bar-fill.ok{background:#f0c040;}
+  .profit-bar-fill.low{background:var(--danger);}
+  .note-strip{font-size:11px;color:var(--muted);background:var(--surface2);border-radius:8px;padding:10px 12px;line-height:1.6;border-left:2px solid var(--border);}
+  .calc-btn{width:100%;padding:13px;background:var(--accent);color:#0e0f11;border:none;border-radius:10px;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:opacity 0.15s,transform 0.1s;}
+  .calc-btn:hover{opacity:0.9;}
+  .calc-btn:active{transform:scale(0.98);}
+  .tag-auto{display:inline-block;font-size:9px;background:#1a2a0a;color:var(--accent);border:1px solid var(--accent);border-radius:4px;padding:1px 5px;margin-left:6px;letter-spacing:1px;vertical-align:middle;}
+  .mt{margin-top:14px;}
+  .hidden{display:none!important;}
+</style>
 </head>
 <body>
-  <h3>统一报价器</h3>
-
-  <div class="box">
-    <div class="row">
-      <label>产品</label>
-      <select id="product">
-        <option value="WPC">WPC格栅</option>
-        <option value="ASA">ASA</option>
-        <option value="UV">UV板</option>
-        <option value="PE">PE</option>
-        <option value="WOOD">木饰面</option>
-      </select>
-    </div>
-
-    <div class="row" id="containerRow">
-      <label>柜型</label>
-      <select id="container">
-        <option value="20GP">20GP</option>
-        <option value="40GP">40GP</option>
-        <option value="40HQ" selected>40HQ</option>
-      </select>
-    </div>
-
-    <div class="row">
-      <label id="exTaxLabel">含税出厂价</label>
-      <input id="exTax" value="0" />
-    </div>
-
-    <div class="row">
-      <label>报价利润点 %</label>
-      <input id="margin" value="5" />
-    </div>
-
-    <div class="row">
-      <label>汇率（RMB / USD）</label>
-      <input id="fx" value="6.90" />
-    </div>
-
-    <div class="small mono" id="fixedNote"></div>
+<div style="max-width:860px;margin:0 auto;">
+  <div class="header">
+    <span class="header-brand">EVOKE WPC</span>
+    <span class="header-sub">报价计算器 v2.1</span>
   </div>
 
-  <!-- WPC/ASA：体积输入 -->
-  <div class="box hidden" id="volumeBox">
-    <b>装柜输入（体积）</b>
-    <div class="row">
-      <label>单支长度 L（m）</label>
-      <input id="vol_L" value="2.90" />
+  <div class="grid">
+    <!-- 产品类型 -->
+    <div class="card col-full">
+      <div class="card-title">产品类型</div>
+      <div class="pill-group" id="productPills">
+        <div class="pill active" data-val="ASA">ASA 户外墙板</div>
+        <div class="pill" data-val="UV">UV 板</div>
+        <div class="pill" data-val="WPC">WPC 格栅</div>
+        <div class="pill" data-val="PE">PE 木塑</div>
+        <div class="pill" data-val="WOOD">木饰面</div>
+      </div>
     </div>
-    <div class="row">
-      <label>包装宽 Pw（m）</label>
-      <input id="vol_Pw" value="0.186" />
-    </div>
-    <div class="row">
-      <label>包装高 Ph（m）</label>
-      <input id="vol_Ph" value="0.180" />
-    </div>
-    <div class="row">
-      <label>每包支数（pcs/包）</label>
-      <input id="vol_N" value="44" />
-    </div>
-    <div class="small">宽高可互换，全部向下取整（只舍不入）。</div>
-  </div>
 
-  <!-- UV：经验表 -->
-  <div class="box hidden" id="uvBox">
-    <b>UV 输入（仅 20GP）</b>
-    <div class="row">
-      <label>长度（m）</label>
-      <select id="uv_len">
-        <option value="2.44">2.44</option>
-        <option value="2.8">2.8</option>
-        <option value="2.9">2.9</option>
-      </select>
-    </div>
-    <div class="row">
-      <label>厚度（mm）</label>
-      <select id="uv_thk">
-        <option value="2">2.0</option>
-        <option value="2.5">2.5</option>
-        <option value="2.8">2.8</option>
-        <option value="3">3.0</option>
-      </select>
-    </div>
-    <div class="row">
-      <label>膜纸</label>
-      <select id="uv_film">
-        <option value="normal">普通</option>
-        <option value="gilded">鎏金（每米+3.5）</option>
-      </select>
-    </div>
-    <div class="small">UV 固定：港杂 5000 RMB/柜；托盘 12 托 × 120 RMB。</div>
-  </div>
+    <!-- 左列 -->
+    <div id="leftCol">
 
-  <!-- PE：重量/米 -->
-  <div class="box hidden" id="peBox">
-    <b>PE 输入（重量主导）</b>
-    <div class="row">
-      <label>每延米重量（kg/m）</label>
-      <input id="pe_kgpm" value="0" />
-    </div>
-    <div class="small">限重口径统一 28 吨（28000 kg），总米数 = FLOOR(28000 ÷ kg/m)。</div>
-  </div>
+      <!-- ASA -->
+      <div class="card" id="asaCard">
+        <div class="card-title">ASA 型号 <span class="tag-auto">AUTO-FILL</span></div>
+        <div class="field">
+          <label>选择型号</label>
+          <select id="asaModel">
+            <option value="">— 手动输入 —</option>
+            <option value="220x25">220×25 格栅板</option>
+            <option value="214x22">214×22 格栅板</option>
+            <option value="192x30">192×30 格栅板</option>
+            <option value="120x12">120×12 墙板</option>
+            <option value="112x16">112×16 墙板</option>
+            <option value="162x16">162×16 墙板</option>
+            <option value="50x50">50×50 角线</option>
+            <option value="160edge">160 收边线</option>
+          </select>
+        </div>
+        <div id="asaSpecsRow" class="specs-row hidden">
+          <div class="spec-item"><div class="spec-label">米重</div><div class="spec-val" id="s_kgpm">—</div></div>
+          <div class="spec-item"><div class="spec-label">包装cm</div><div class="spec-val" id="s_pack">—</div></div>
+          <div class="spec-item"><div class="spec-label">支/包</div><div class="spec-val" id="s_n">—</div></div>
+          <div class="spec-item"><div class="spec-label">出厂价</div><div class="spec-val" id="s_price">—</div></div>
+        </div>
+      </div>
 
-  <!-- 木饰面：重量/㎡ -->
-  <div class="box hidden" id="woodBox">
-    <b>木饰面输入（重量主导）</b>
-    <div class="row">
-      <label>长度 L（m）</label>
-      <select id="wood_L">
-        <option value="2.44">2.44</option>
-        <option value="2.6">2.6</option>
-        <option value="2.8">2.8</option>
-        <option value="2.9">2.9</option>
-      </select>
-    </div>
-    <div class="row">
-      <label>厚度（mm）</label>
-      <select id="wood_thk">
-        <option value="5">5.0</option>
-        <option value="7.5">7.5</option>
-        <option value="8">8.0</option>
-      </select>
-    </div>
-    <div class="row">
-      <label>密度（kg/m³）</label>
-      <select id="wood_den">
-        <option value="650">650</option>
-        <option value="700">700</option>
-      </select>
-    </div>
-    <div class="small">木饰面托盘：15 托 × 220 RMB；单托 100 kg；限重 28000 kg。</div>
-  </div>
+      <!-- UV -->
+      <div class="card hidden mt" id="uvCard">
+        <div class="card-title">UV 规格 <span class="tag-auto">AUTO-FILL</span></div>
+        <div class="field">
+          <label>长度</label>
+          <div class="uv-len-group" id="uvLenGroup">
+            <div class="uv-len-btn active" data-len="2.44">2.44m</div>
+            <div class="uv-len-btn" data-len="2.80">2.80m</div>
+            <div class="uv-len-btn" data-len="2.90">2.90m</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>厚度（含税采购价/张）</label>
+          <div class="uv-matrix" id="uvMatrix"></div>
+        </div>
+        <div class="field mt">
+          <label>膜纸</label>
+          <div class="film-group">
+            <div class="film-btn active" data-film="normal">普通</div>
+            <div class="film-btn" data-film="gilded">鎏金 +¥3.5/m</div>
+          </div>
+        </div>
+        <div class="specs-row mt">
+          <div class="spec-item"><div class="spec-label">长度</div><div class="spec-val" id="uv_s_len">—</div></div>
+          <div class="spec-item"><div class="spec-label">厚度</div><div class="spec-val" id="uv_s_thk">—</div></div>
+          <div class="spec-item"><div class="spec-label">采购价/张</div><div class="spec-val" id="uv_s_price">—</div></div>
+          <div class="spec-item"><div class="spec-label">装柜(20GP)</div><div class="spec-val" id="uv_s_qty">—</div></div>
+        </div>
+      </div>
 
-  <div class="box">
-    <button id="btn">计算</button>
-    <div class="small">结果全部保留 2 位小数。装柜相关一律向下取整。</div>
-  </div>
+      <!-- 柜型 -->
+      <div class="card mt" id="containerCard">
+        <div class="card-title">柜型</div>
+        <div class="container-group">
+          <div class="ctag" data-val="20GP">20GP</div>
+          <div class="ctag" data-val="40GP">40GP</div>
+          <div class="ctag active" data-val="40HQ">40HQ</div>
+        </div>
+      </div>
 
-  <div class="box">
-    <b>结果（全部保留 2 位小数）</b>
-    <div class="kpi mono">总 PCS：<span id="pcsOut">0.00</span> ｜ 每柜总米数：<span id="metersOut">0.00</span></div>
-    <div class="kpi mono">FOB 单价（USD）：<span id="fobUsdUnitOut">0.00</span> ｜ FOB 单价（RMB）：<span id="fobRmbUnitOut">0.00</span></div>
-    <div class="kpi mono">FOB 总额（RMB）：<span id="fobRmbTotalOut">0.00</span> ｜ FOB 总额（USD）：<span id="fobUsdTotalOut">0.00</span></div>
-    <div class="kpi mono">成本：<span id="costOut">0.00</span> ｜ 退税：<span id="rebateOut">0.00</span></div>
-    <div class="kpi mono">报价利润（不含退税）：<span id="profitOut">0.00</span> ｜ 报价利润率：<span id="profitRateOut">0.00</span>%</div>
-    <div class="kpi mono">真实利润：<span id="realProfitOut">0.00</span> ｜ 真实利润率：<span id="realRateOut">0.00</span>%</div>
-    <div class="kpi mono">提成：<span id="commOut">0.00</span></div>
-    <hr/>
-    <div class="small mono" id="note"></div>
+      <!-- 价格参数 -->
+      <div class="card mt">
+        <div class="card-title">价格参数</div>
+        <div class="field"><label id="exTaxLabel">含税出厂价 (RMB/m)</label><input id="exTax" value="0"/></div>
+        <div class="field"><label>报价利润点 %</label><input id="margin" value="15"/></div>
+        <div class="field"><label>汇率 (RMB/USD)</label><input id="fx" value="7.25"/></div>
+      </div>
+
+      <!-- WPC/ASA 装柜参数 -->
+      <div class="card hidden mt" id="volumeBox">
+        <div class="card-title">装柜参数</div>
+        <div class="field"><label>单支长度 L (m)</label><input id="vol_L" value="2.90"/></div>
+        <div class="field"><label>包装宽 Pw (m)</label><input id="vol_Pw" value="0.23"/></div>
+        <div class="field"><label>包装高 Ph (m)</label><input id="vol_Ph" value="0.21"/></div>
+        <div class="field"><label>每包支数 (pcs/包)</label><input id="vol_N" value="8"/></div>
+      </div>
+
+      <!-- PE -->
+      <div class="card hidden mt" id="peBox">
+        <div class="card-title">PE 参数</div>
+        <div class="field"><label>每延米重量 (kg/m)</label><input id="pe_kgpm" value="0"/></div>
+        <div class="note-strip mt">限重 28,000 kg，总米数 = ⌊28000 ÷ kg/m⌋</div>
+      </div>
+
+      <!-- 木饰面 -->
+      <div class="card hidden mt" id="woodBox">
+        <div class="card-title">木饰面参数</div>
+        <div class="field"><label>长度 L (m)</label>
+          <select id="wood_L"><option value="2.44">2.44m</option><option value="2.6">2.6m</option><option value="2.8">2.8m</option><option value="2.9">2.9m</option></select>
+        </div>
+        <div class="field"><label>厚度 (mm)</label>
+          <select id="wood_thk"><option value="5">5.0mm</option><option value="7.5">7.5mm</option><option value="8">8.0mm</option></select>
+        </div>
+        <div class="field"><label>密度 (kg/m³)</label>
+          <select id="wood_den"><option value="650">650</option><option value="700">700</option></select>
+        </div>
+      </div>
+
+      <div class="mt"><button class="calc-btn" id="btn">CALCULATE</button></div>
+    </div>
+
+    <!-- 右列：结果 -->
+    <div>
+      <div class="card">
+        <div class="card-title">装柜结果</div>
+        <div class="kpi-grid">
+          <div class="kpi-item hl">
+            <div class="kpi-label" id="lblMeters">每柜总米数</div>
+            <div class="kpi-value" id="metersOut">—</div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-label">总 PCS / 张</div>
+            <div class="kpi-value" id="pcsOut">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mt">
+        <div class="card-title">FOB 报价</div>
+        <div class="kpi-grid">
+          <div class="kpi-item hl">
+            <div class="kpi-label">FOB 单价 USD</div>
+            <div class="kpi-value" id="fobUsdUnit">—</div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-label">FOB 单价 RMB</div>
+            <div class="kpi-value" id="fobRmbUnit">—</div>
+          </div>
+          <div class="kpi-item hl2">
+            <div class="kpi-label">FOB 总额 USD</div>
+            <div class="kpi-value" id="fobUsdTotal">—</div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-label">FOB 总额 RMB</div>
+            <div class="kpi-value" id="fobRmbTotal">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mt">
+        <div class="card-title">利润分析</div>
+        <div class="kpi-grid">
+          <div class="kpi-item"><div class="kpi-label">成本 RMB</div><div class="kpi-value" id="costOut">—</div></div>
+          <div class="kpi-item"><div class="kpi-label">退税 RMB</div><div class="kpi-value" id="rebateOut">—</div></div>
+          <div class="kpi-item"><div class="kpi-label">报价利润</div><div class="kpi-value" id="profitOut">—</div></div>
+          <div class="kpi-item"><div class="kpi-label">真实利润</div><div class="kpi-value" id="realProfitOut">—</div></div>
+        </div>
+        <div class="profit-bar-wrap">
+          <div class="profit-bar-label"><span>真实利润率</span><span id="realRateOut">—%</span></div>
+          <div class="profit-bar-track"><div class="profit-bar-fill" id="profitBar"></div></div>
+        </div>
+        <div class="divider"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:11px;color:var(--muted);">提成 (15%)</span>
+          <span style="font-size:16px;color:var(--accent2);" id="commOut">—</span>
+        </div>
+      </div>
+
+      <div class="note-strip mt" id="noteStrip">选择产品规格并点击 CALCULATE</div>
+    </div>
   </div>
+</div>
 
 <script>
-/* ========= 固定常量（不需要填写） ========= */
-const FIXED = {
-  port: 5000,          // RMB/柜
-  payloadKg: 28000,    // 统一 28 吨口径
-  vat: 0.13,           // 仅用于解释，退税按你指定的 /1.13*0.13
-  commRate: 0.15
+const ASA_DATA={
+  "220x25":{price:17.6,kgpm:1.68,pw:0.23,ph:0.21,pl:2.9,n:8},
+  "214x22":{price:16.5,kgpm:1.56,pw:0.224,ph:0.205,pl:2.9,n:9},
+  "192x30":{price:16.7,kgpm:1.58,pw:0.246,ph:0.205,pl:2.9,n:8},
+  "120x12":{price:7.8,kgpm:0.59,pw:0.145,ph:0.17,pl:2.9,n:20},
+  "112x16":{price:8.6,kgpm:0.68,pw:0.14,ph:0.203,pl:2.9,n:18},
+  "162x16":{price:12.0,kgpm:1.00,pw:0.158,ph:0.19,pl:2.9,n:14},
+  "50x50":{price:6.2,kgpm:0.45,pw:0.14,ph:0.145,pl:2.9,n:30},
+  "160edge":{price:5.8,kgpm:0.45,pw:0.25,ph:0.115,pl:2.9,n:40}
 };
 
-// 柜内尺寸（m），用于体积模型
-const CONTAINERS = {
-  "20GP": { L: 5.90,  W: 2.35, H: 2.39, payloadKg: FIXED.payloadKg },
-  "40GP": { L: 12.03, W: 2.35, H: 2.39, payloadKg: FIXED.payloadKg },
-  "40HQ": { L: 12.03, W: 2.35, H: 2.70, payloadKg: FIXED.payloadKg }
+const UV_DATA={
+  "2.44_2.0":{price:41.52,qty:2300},"2.44_2.5":{price:48.47,qty:1800},
+  "2.44_2.8":{price:52.75,qty:1600},"2.44_3.0":{price:55.43,qty:1500},
+  "2.80_2.0":{price:47.94,qty:2000},"2.80_2.5":{price:55.43,qty:1600},
+  "2.80_2.8":{price:60.24,qty:1400},"2.80_3.0":{price:63.45,qty:1300},
+  "2.90_2.0":{price:49.01,qty:1900},"2.90_2.5":{price:58.10,qty:1500},
+  "2.90_2.8":{price:62.92,qty:1300},"2.90_3.0":{price:66.13,qty:1200}
 };
 
-// UV：20GP经验整柜张数表
-const UV_TABLE_20GP = {
-  "2.44": { "2":2300, "2.5":1800, "2.8":1600, "3":1500 },
-  "2.8":  { "2":2000, "2.5":1600, "2.8":1400, "3":1300 },
-  "2.9":  { "2":1900, "2.5":1500, "2.8":1300, "3":1200 }
-};
+const CONTAINERS={"20GP":{L:5.90,W:2.35,H:2.39},"40GP":{L:12.03,W:2.35,H:2.39},"40HQ":{L:12.03,W:2.35,H:2.70}};
+const PORT=5000,PAYLOAD=28000,COMM=0.15;
 
-// 托盘规则（固定）
-const UV_PALLET = { cnt: 12, price: 120, kg: 100 };
-const WOOD_PALLET = { cnt: 15, price: 220, kg: 100 };
+let product="ASA",container="40HQ",uvLen="2.44",uvThk="2.0",uvFilm="normal";
 
-/* ========= 工具 ========= */
-const $ = (id) => document.getElementById(id);
-function nval(id){
-  const s = String($(id).value ?? "").trim().replace(",", ".");
-  const v = Number(s);
-  return Number.isFinite(v) ? v : 0;
-}
-function f2(x){
-  const v = Number(x);
-  return Number.isFinite(v) ? v.toFixed(2) : "0.00";
-}
-function flo(x){
-  if(!Number.isFinite(x) || x <= 0) return 0;
-  return Math.floor(x);
+const $=id=>document.getElementById(id);
+const flo=x=>Math.floor(x>0?x:0);
+const f2=x=>(+x).toFixed(2);
+const fmtN=x=>{const n=+x;if(!isFinite(n))return"—";return Math.abs(n)>=10000?n.toLocaleString('zh',{maximumFractionDigits:0}):n.toFixed(2);};
+const nval=id=>{const v=+($(id).value||0);return isFinite(v)?v:0;};
+
+function buildUVMatrix(){
+  const mat=$('uvMatrix'); mat.innerHTML='';
+  ["2.0","2.5","2.8","3.0"].forEach(thk=>{
+    const d=UV_DATA[`${uvLen}_${thk}`]||{};
+    const filmAdd=uvFilm==='gilded'?+uvLen*3.5:0;
+    const shown=d.price?(d.price+filmAdd).toFixed(2):'—';
+    const cell=document.createElement('div');
+    cell.className='uv-cell'+(thk===uvThk?' active':'');
+    cell.innerHTML=`<div class="uv-thick">${thk}mm</div><div class="uv-price">¥${shown}</div>`;
+    cell.addEventListener('click',()=>{
+      uvThk=thk;
+      document.querySelectorAll('.uv-cell').forEach(c=>c.classList.remove('active'));
+      cell.classList.add('active');
+      syncUVFields(); calc();
+    });
+    mat.appendChild(cell);
+  });
 }
 
-/* ========= UI 切换 ========= */
+function syncUVFields(){
+  const d=UV_DATA[`${uvLen}_${uvThk}`]||{};
+  const filmAdd=uvFilm==='gilded'?+uvLen*3.5:0;
+  const total=d.price?d.price+filmAdd:0;
+  $('uv_s_len').textContent=uvLen+'m';
+  $('uv_s_thk').textContent=uvThk+'mm';
+  $('uv_s_price').textContent=total?'¥'+f2(total):'—';
+  $('uv_s_qty').textContent=d.qty?(d.qty+'张'):'—';
+  if(d.price) $('exTax').value=f2(total);
+}
+
+// UV len buttons
+document.querySelectorAll('.uv-len-btn').forEach(b=>b.addEventListener('click',()=>{
+  uvLen=b.dataset.len;
+  document.querySelectorAll('.uv-len-btn').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  buildUVMatrix(); syncUVFields(); calc();
+}));
+
+// Film buttons
+document.querySelectorAll('.film-btn').forEach(b=>b.addEventListener('click',()=>{
+  uvFilm=b.dataset.film;
+  document.querySelectorAll('.film-btn').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  buildUVMatrix(); syncUVFields(); calc();
+}));
+
+// Product pills
+document.querySelectorAll('#productPills .pill').forEach(p=>p.addEventListener('click',()=>{
+  document.querySelectorAll('#productPills .pill').forEach(x=>x.classList.remove('active'));
+  p.classList.add('active'); product=p.dataset.val; updateUI();
+}));
+
+// Container tags
+document.querySelectorAll('.ctag').forEach(c=>c.addEventListener('click',()=>{
+  document.querySelectorAll('.ctag').forEach(x=>x.classList.remove('active'));
+  c.classList.add('active'); container=c.dataset.val; calc();
+}));
+
+// ASA model
+$('asaModel').addEventListener('change',()=>{
+  const key=$('asaModel').value; if(!key){$('asaSpecsRow').classList.add('hidden');return;}
+  const d=ASA_DATA[key];
+  $('exTax').value=d.price; $('vol_L').value=d.pl;
+  $('vol_Pw').value=d.pw; $('vol_Ph').value=d.ph; $('vol_N').value=d.n;
+  $('s_kgpm').textContent=d.kgpm+'kg/m';
+  $('s_pack').textContent=(d.pw*100).toFixed(1)+'×'+(d.ph*100).toFixed(1)+'cm';
+  $('s_n').textContent=d.n+'支';
+  $('s_price').textContent='¥'+d.price+'/m';
+  $('asaSpecsRow').classList.remove('hidden');
+  calc();
+});
+
 function updateUI(){
-  const p = $("product").value;
-
-  $("volumeBox").classList.toggle("hidden", !(p==="WPC" || p==="ASA"));
-  $("uvBox").classList.toggle("hidden", p!=="UV");
-  $("peBox").classList.toggle("hidden", p!=="PE");
-  $("woodBox").classList.toggle("hidden", p!=="WOOD");
-
-  // UV 仅 20GP：隐藏柜型并强制 20GP
-  if(p==="UV"){
-    $("containerRow").classList.add("hidden");
-  }else{
-    $("containerRow").classList.remove("hidden");
-  }
-
-  // 含税出厂价标签（提示单位）
-  if(p==="UV") $("exTaxLabel").innerText = "含税出厂价（RMB/张）";
-  else if(p==="WOOD") $("exTaxLabel").innerText = "含税出厂价（RMB/㎡）";
-  else $("exTaxLabel").innerText = "含税出厂价（RMB/m）";
-
-  const cont = (p==="UV") ? "20GP" : $("container").value;
-  $("fixedNote").innerText =
-    `固定口径：港杂 ${f2(FIXED.port)} RMB/柜；限重 ${f2(FIXED.payloadKg)} kg；提成 ${(FIXED.commRate*100).toFixed(0)}%。` +
-    ` UV托盘=12×120；木饰面托盘=15×220（单托100kg）。`;
-
+  const p=product;
+  $('asaCard').classList.toggle('hidden',p!=='ASA');
+  $('uvCard').classList.toggle('hidden',p!=='UV');
+  $('volumeBox').classList.toggle('hidden',!(p==='ASA'||p==='WPC'));
+  $('peBox').classList.toggle('hidden',p!=='PE');
+  $('woodBox').classList.toggle('hidden',p!=='WOOD');
+  $('containerCard').classList.toggle('hidden',p==='UV');
+  const labels={ASA:'含税出厂价 (RMB/m)',WPC:'含税出厂价 (RMB/m)',PE:'含税出厂价 (RMB/m)',UV:'含税出厂价 (RMB/张)',WOOD:'含税出厂价 (RMB/㎡)'};
+  $('exTaxLabel').textContent=labels[p]||'含税出厂价';
+  $('lblMeters').textContent=p==='UV'?'装柜张数':'每柜总米数';
+  if(p==='UV'){buildUVMatrix();syncUVFields();}
   calc();
 }
 
-/* ========= 核心计算（含数量段 + 报价段） ========= */
 function calc(){
-  const p = $("product").value;
-  const cont = (p==="UV") ? "20GP" : $("container").value;
-  const container = CONTAINERS[cont];
+  const p=product, cont=p==='UV'?'20GP':container, C=CONTAINERS[cont];
+  const exTax=nval('exTax'), margin=nval('margin')/100, fx=nval('fx')||7.25;
+  let totalPCS=0,totalMeters=0,chargeQty=0,fobRmbUnit=0,fobRmbTotalV=0;
+  let costRmb=0,rebateRmb=0,palletCost=0,exFactoryCost=0,noteText='',unitLabel='/m';
 
-  const exTax = nval("exTax");          // 含税出厂价（按产品单位）
-  const margin = nval("margin")/100;   // 报价利润点（不含退税）
-  const fx = nval("fx");
-
-  // 你要求的第一行：总PCS、每柜总米数
-  let totalPCS = 0;
-  let totalMeters = 0;
-
-  // 计价数量（用于 FOB 单价、成本、退税）：WPC/ASA/PE 按 m；WOOD 按 ㎡；UV 按 张
-  let chargeQty = 0;
-
-  // FOB 单价（RMB/计价单位），FOB 总额 RMB
-  let fobRmbUnit = 0;
-  let fobRmbTotal = 0;
-
-  // 成本：出厂成本（含税）+ 港杂 + 托盘费（如有）
-  let costRmb = 0;
-
-  // 退税：按你口径 = 成本价/1.13*0.13，其中成本价=出厂成本（含税，不含港杂不含托盘）
-  let rebateRmb = 0;
-
-  // 托盘费（RMB/柜）
-  let palletCostTotal = 0;
-
-  // 出厂成本（含税，不含港杂不含托盘），用于退税
-  let exFactoryCostTaxed = 0;
-
-  // ====== 产品数量段 ======
-  if(p==="WPC" || p==="ASA"){
-    // 体积模型：先算 packs，再算 totalPCS 与 totalMeters
-    const L = nval("vol_L");
-    const Pw = nval("vol_Pw");
-    const Ph = nval("vol_Ph");
-    const N = nval("vol_N");
-
-    const lenCount = flo(container.L / (L>0 ? L : 1e9));
-
-    const packsA = lenCount * flo(container.W / (Pw>0 ? Pw : 1e9)) * flo(container.H / (Ph>0 ? Ph : 1e9));
-    const packsB = lenCount * flo(container.W / (Ph>0 ? Ph : 1e9)) * flo(container.H / (Pw>0 ? Pw : 1e9));
-    const packs = Math.max(packsA, packsB);
-
-    totalPCS = packs * (N>0 ? N : 0);
-    totalMeters = totalPCS * (L>0 ? L : 0);
-
-    chargeQty = totalMeters;                 // 计价按 m
-    exFactoryCostTaxed = exTax * chargeQty;  // 出厂含税成本（用于退税）
-
-    const portPerUnit = (chargeQty>0) ? (FIXED.port/chargeQty) : 0;
-    fobRmbUnit = exTax*(1+margin) + portPerUnit; // RMB/m
-    fobRmbTotal = fobRmbUnit * chargeQty;
-
-    costRmb = exFactoryCostTaxed + FIXED.port;
-
-    rebateRmb = exFactoryCostTaxed / 1.13 * 0.13;
-
-    $("note").innerText = `WPC/ASA：体积模型，宽高可互换。packs=${packs}，总PCS=${f2(totalPCS)}，总米数=${f2(totalMeters)}m。`;
+  if(p==='ASA'||p==='WPC'){
+    const L=nval('vol_L')||2.9,Pw=nval('vol_Pw')||0.23,Ph=nval('vol_Ph')||0.21,N=nval('vol_N')||8;
+    const nL=flo(C.L/L);
+    const packs=Math.max(nL*flo(C.W/Pw)*flo(C.H/Ph), nL*flo(C.W/Ph)*flo(C.H/Pw));
+    totalPCS=packs*N; totalMeters=totalPCS*L; chargeQty=totalMeters;
+    exFactoryCost=exTax*chargeQty;
+    fobRmbUnit=exTax*(1+margin)+(chargeQty>0?PORT/chargeQty:0);
+    fobRmbTotalV=fobRmbUnit*chargeQty; costRmb=exFactoryCost+PORT;
+    rebateRmb=exFactoryCost/1.13*0.13;
+    noteText=`${cont} | ${packs}包 | 宽高互换取最优`;
+  }
+  if(p==='UV'){
+    const d=UV_DATA[`${uvLen}_${uvThk}`]||{};
+    const sheets=d.qty||0; palletCost=12*120;
+    totalPCS=sheets; chargeQty=sheets; unitLabel='/张';
+    exFactoryCost=exTax*chargeQty;
+    fobRmbUnit=exTax*(1+margin)+(chargeQty>0?(PORT+palletCost)/chargeQty:0);
+    fobRmbTotalV=fobRmbUnit*chargeQty; costRmb=exFactoryCost+PORT+palletCost;
+    rebateRmb=exFactoryCost/1.13*0.13;
+    noteText=`UV 20GP | ${uvLen}m × ${uvThk}mm | ${sheets}张 | 托盘¥${palletCost}${uvFilm==='gilded'?' | 鎏金':''}`;
+  }
+  if(p==='PE'){
+    const kgpm=nval('pe_kgpm')||1;
+    totalMeters=flo(PAYLOAD/kgpm); chargeQty=totalMeters;
+    exFactoryCost=exTax*chargeQty;
+    fobRmbUnit=exTax*(1+margin)+(chargeQty>0?PORT/chargeQty:0);
+    fobRmbTotalV=fobRmbUnit*chargeQty; costRmb=exFactoryCost+PORT;
+    rebateRmb=exFactoryCost/1.13*0.13;
+    noteText=`PE | 28t限重 | ${totalMeters}m`;
+  }
+  if(p==='WOOD'){
+    const L=+$('wood_L').value,thk=+$('wood_thk').value,den=+$('wood_den').value;
+    const kgPS=1.22*L*(thk/1000)*den; palletCost=15*220;
+    const sheets=flo((PAYLOAD-1500)/(kgPS||1));
+    const totalSqm=sheets*1.22*L;
+    totalPCS=sheets; chargeQty=totalSqm; unitLabel='/㎡';
+    exFactoryCost=exTax*chargeQty;
+    fobRmbUnit=exTax*(1+margin)+(chargeQty>0?(PORT+palletCost)/chargeQty:0);
+    fobRmbTotalV=fobRmbUnit*chargeQty; costRmb=exFactoryCost+PORT+palletCost;
+    rebateRmb=exFactoryCost/1.13*0.13;
+    noteText=`木饰面 | ${sheets}张 | ${f2(totalSqm)}㎡`;
   }
 
-  if(p==="PE"){
-    // 重量模型：m = FLOOR(28000 ÷ kg/m)
-    const kgpm = nval("pe_kgpm");
-    totalMeters = flo(container.payloadKg / (kgpm>0 ? kgpm : 1e9));
+  const fobUsdUnitV=fobRmbUnit/fx, fobUsdTotalV=fobRmbTotalV/fx;
+  const profit=fobRmbTotalV-costRmb, realProfit=profit+rebateRmb;
+  const realRate=fobRmbTotalV?realProfit/fobRmbTotalV*100:0;
 
-    totalPCS = 0;                    // 未提供“pcs/米”的换算，统一显示0
-    chargeQty = totalMeters;         // 计价按 m
-    exFactoryCostTaxed = exTax * chargeQty;
-
-    const portPerUnit = (chargeQty>0) ? (FIXED.port/chargeQty) : 0;
-    fobRmbUnit = exTax*(1+margin) + portPerUnit; // RMB/m
-    fobRmbTotal = fobRmbUnit * chargeQty;
-
-    costRmb = exFactoryCostTaxed + FIXED.port;
-    rebateRmb = exFactoryCostTaxed / 1.13 * 0.13;
-
-    $("note").innerText = `PE：重量模型。kg/m=${f2(kgpm)}，总米数=${f2(totalMeters)}m（向下取整）。`;
+  if(p==='UV'){
+    $('metersOut').innerHTML=totalPCS>0?fmtN(totalPCS)+'<span class="kpi-unit">张</span>':'—';
+  } else {
+    $('metersOut').innerHTML=totalMeters>0?fmtN(totalMeters)+'<span class="kpi-unit">m</span>':'—';
   }
-
-  if(p==="UV"){
-    // UV 经验整柜：张数表 + 膜纸加价 + 托盘费
-    const uvLen = $("uv_len").value;
-    const uvThk = $("uv_thk").value;
-    const film = $("uv_film").value;
-
-    const sheets = (UV_TABLE_20GP[uvLen] && UV_TABLE_20GP[uvLen][uvThk]) ? UV_TABLE_20GP[uvLen][uvThk] : 0;
-
-    const L = Number(uvLen);
-    const filmAddPerSheet = (film==="gilded") ? (L * 3.5) : 0;
-
-    const exTaxAdj = exTax + filmAddPerSheet;
-
-    palletCostTotal = UV_PALLET.cnt * UV_PALLET.price; // 1440
-
-    totalPCS = sheets;     // 总PCS=张数
-    totalMeters = 0;
-
-    chargeQty = sheets;                // 计价按 张
-    exFactoryCostTaxed = exTaxAdj * chargeQty;
-
-    const portPerUnit = (chargeQty>0) ? (FIXED.port/chargeQty) : 0;
-    const palletPerUnit = (chargeQty>0) ? (palletCostTotal/chargeQty) : 0;
-
-    fobRmbUnit = exTaxAdj*(1+margin) + portPerUnit + palletPerUnit; // RMB/张
-    fobRmbTotal = fobRmbUnit * chargeQty;
-
-    costRmb = exFactoryCostTaxed + FIXED.port + palletCostTotal;
-
-    rebateRmb = exFactoryCostTaxed / 1.13 * 0.13;
-
-    $("note").innerText =
-      `UV：仅20GP经验值。张数=${sheets}。托盘费=${f2(palletCostTotal)} RMB/柜。` +
-      (film==="gilded" ? ` 鎏金每张加${f2(filmAddPerSheet)} RMB。` : ` 普通不加价。`);
-  }
-
-  if(p==="WOOD"){
-    // 木饰面：重量→张数→总㎡，托盘 15×220，单托100kg，限重28000kg
-    const L = Number($("wood_L").value);
-    const thk = Number($("wood_thk").value);    // mm
-    const den = Number($("wood_den").value);    // kg/m³
-
-    const sqmPerSheet = 1.22 * L;
-    const kgPerSheet = 1.22 * L * (thk/1000) * den;
-
-    palletCostTotal = WOOD_PALLET.cnt * WOOD_PALLET.price; // 3300
-    const palletWeightTotal = WOOD_PALLET.cnt * WOOD_PALLET.kg; // 1500
-    const boardPayloadKg = Math.max(0, container.payloadKg - palletWeightTotal);
-
-    const sheets = flo(boardPayloadKg / (kgPerSheet>0 ? kgPerSheet : 1e9));
-    const totalSqm = sheets * sqmPerSheet;
-
-    totalPCS = sheets;      // 这里 PCS=张数（最直观）
-    totalMeters = 0;        // 木饰面不按米
-
-    chargeQty = totalSqm;   // 计价按 ㎡
-    exFactoryCostTaxed = exTax * chargeQty; // 出厂含税成本（用于退税）
-
-    const portPerUnit = (chargeQty>0) ? (FIXED.port/chargeQty) : 0;
-    const palletPerUnit = (chargeQty>0) ? (palletCostTotal/chargeQty) : 0;
-
-    fobRmbUnit = exTax*(1+margin) + portPerUnit + palletPerUnit; // RMB/㎡
-    fobRmbTotal = fobRmbUnit * chargeQty;
-
-    costRmb = exFactoryCostTaxed + FIXED.port + palletCostTotal;
-    rebateRmb = exFactoryCostTaxed / 1.13 * 0.13;
-
-    $("note").innerText =
-      `木饰面：单张面积=${f2(sqmPerSheet)}㎡，单张重量=${f2(kgPerSheet)}kg，张数=${f2(sheets)}，总㎡=${f2(totalSqm)}。托盘费=${f2(palletCostTotal)} RMB/柜。`;
-  }
-
-  // ====== 利润段（统一） ======
-  const fobUsdUnit = (fx>0) ? (fobRmbUnit / fx) : 0;
-  const fobUsdTotal = (fx>0) ? (fobRmbTotal / fx) : 0;
-
-  const profit = fobRmbTotal - costRmb; // 不含退税
-  const profitRate = (fobRmbTotal!==0) ? (profit / fobRmbTotal * 100) : 0;
-
-  const realProfit = profit + rebateRmb;
-  const realRate = (fobRmbTotal!==0) ? (realProfit / fobRmbTotal * 100) : 0;
-
-  const commission = realProfit * FIXED.commRate;
-
-  // ====== 输出（全部2位） ======
-  $("pcsOut").innerText = f2(totalPCS);
-  $("metersOut").innerText = f2(totalMeters);
-
-  $("fobUsdUnitOut").innerText = f2(fobUsdUnit);
-  $("fobRmbUnitOut").innerText = f2(fobRmbUnit);
-
-  $("fobRmbTotalOut").innerText = f2(fobRmbTotal);
-  $("fobUsdTotalOut").innerText = f2(fobUsdTotal);
-
-  $("costOut").innerText = f2(costRmb);
-  $("rebateOut").innerText = f2(rebateRmb);
-
-  $("profitOut").innerText = f2(profit);
-  $("profitRateOut").innerText = f2(profitRate);
-
-  $("realProfitOut").innerText = f2(realProfit);
-  $("realRateOut").innerText = f2(realRate);
-
-  $("commOut").innerText = f2(commission);
+  $('pcsOut').innerHTML=fmtN(totalPCS);
+  $('fobUsdUnit').innerHTML=f2(fobUsdUnitV)+'<span class="kpi-unit">'+unitLabel+'</span>';
+  $('fobRmbUnit').innerHTML=f2(fobRmbUnit)+'<span class="kpi-unit">'+unitLabel+'</span>';
+  $('fobUsdTotal').innerHTML=fmtN(fobUsdTotalV);
+  $('fobRmbTotal').innerHTML=fmtN(fobRmbTotalV);
+  $('costOut').innerHTML=fmtN(costRmb);
+  $('rebateOut').innerHTML=fmtN(rebateRmb);
+  $('profitOut').innerHTML=fmtN(profit);
+  $('realProfitOut').innerHTML=fmtN(realProfit);
+  $('realRateOut').textContent=f2(realRate)+'%';
+  const bar=$('profitBar');
+  bar.style.width=(Math.min(Math.max(realRate,0),40)/40*100)+'%';
+  bar.className='profit-bar-fill '+(realRate>=15?'good':realRate>=8?'ok':'low');
+  $('commOut').textContent=fmtN(realProfit*COMM)+' RMB';
+  $('noteStrip').textContent=noteText||'— 请选择规格后计算 —';
 }
 
-/* ========= 事件绑定 ========= */
-$("product").addEventListener("change", updateUI);
-$("container").addEventListener("change", updateUI);
-["exTax","margin","fx","vol_L","vol_Pw","vol_Ph","vol_N","uv_len","uv_thk","uv_film","pe_kgpm","wood_L","wood_thk","wood_den"]
-  .forEach(id=>{
-    const el = $(id);
-    if(!el) return;
-    el.addEventListener("input", calc);
-    el.addEventListener("change", calc);
-  });
-$("btn").addEventListener("click", calc);
+['exTax','margin','fx','vol_L','vol_Pw','vol_Ph','vol_N','pe_kgpm','wood_L','wood_thk','wood_den']
+  .forEach(id=>{const el=$(id);if(!el)return;el.addEventListener('input',calc);el.addEventListener('change',calc);});
+$('btn').addEventListener('click',calc);
 
-// 初始化
 updateUI();
 </script>
 </body>
